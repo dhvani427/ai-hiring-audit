@@ -339,4 +339,4 @@ Dataset link: [https://www.kaggle.com/datasets/zulqarnain11/zzzzzzzzzzzzzzzz](ht
 
 ## Project Repository
 
-[View the GitHub repository](https://github.com/YOUR-USERNAME/YOUR-REPO-NAME)
+[View the GitHub repository](https://github.com/dhvani427/ai-hiring-audit)
