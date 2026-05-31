@@ -72,15 +72,14 @@ function attachTooltip(target, tooltip, fn) {
 ```
 
 ```js
-const selectedJobInput = Inputs.select(
-    ["All", ...new Set(data.map(d => d.Job_Category))]
-  );
-
-const selectedJob = Generators.input(selectedJobInput);
+const selectedJob = view( Inputs.select(
+    ["All", ...new Set(data.map(d => d.Job_Category))],
+    {label: "Job Category"}
+  ));
 ```
 
 ```js
-const selectedYearsInput =
+const selectedYears = view(
   Inputs.range(
     [
       d3.min(data, d => d.Years_Experience),
@@ -91,9 +90,8 @@ const selectedYearsInput =
       value: d3.max(data, d => d.Years_Experience),
       label: "Max Experience"
     }
-  );
-
-const selectedYears = Generators.input(selectedYearsInput);
+ )
+);
 ```
 
 ```js
@@ -155,27 +153,37 @@ const disagreementChart = (() => {
     .style("font", "9pt sans-serif");
 
   svg.append("g")
+    .attr("class", "y-axis")
     .attr("transform", `translate(${margin.left}, 0)`)
     .call(d3.axisLeft(y));
 
   svg.selectAll("rect")
-    .data(disagreementData)
+    .data(disagreementData, d => d.type)
     .join("rect")
     .attr("x", d => x(d.type))
-    .attr("y", d => y(d.count))
     .attr("width", x.bandwidth())
-    .attr("height", d => y(0) - y(d.count))
-    .attr("opacity", 0.75);
+    .attr("y", y(0))
+    .attr("height", 0)
+    .attr("opacity", 0.75)
+    .transition()
+    .duration(700)
+    .ease(d3.easeCubicOut)
+    .attr("y", d => y(d.count))
+    .attr("height", d => y(0) - y(d.count));
 
   svg.selectAll("text.count")
-    .data(disagreementData)
+    .data(disagreementData, d => d.type)
     .join("text")
     .attr("class", "count")
     .attr("x", d => x(d.type) + x.bandwidth() / 2)
-    .attr("y", d => y(d.count) - 6)
+    .attr("y", y(0) - 6)
     .attr("text-anchor", "middle")
     .style("font", "9pt sans-serif")
-    .text(d => d.count);
+    .text(d => d.count)
+    .transition()
+    .duration(700)
+    .ease(d3.easeCubicOut)
+    .attr("y", d => y(d.count) - 6);
 
   svg.append("text")
     .attr("transform", "rotate(-90)")
@@ -326,6 +334,20 @@ html`
     ${scatterplot}
 
     <div style="
+      font: 10pt sans-serif;
+      margin-top: 8px;
+      color: #555;
+      width:610px;
+      line-height:1.3;
+      white-space: normal;
+      text-align:center;
+    ">
+      <div>Showing candidates with ${selectedYears} years of experience or less.</div>
+
+    <div> Showing ${filteredData.length} of ${data.length} candidates.</div>
+    </div>
+
+    <div style="
       width:610px;
       font: 10pt sans-serif;
       line-height:1.5;
@@ -352,50 +374,6 @@ html`
     margin-top:42px;
     width:260px;
   ">
-
-    <div style="
-      font: 10pt sans-serif;
-      font-weight: bold;
-      margin-bottom: 12px;
-    ">
-      Job Category
-    </div>
-
-    <div style="width:260px;">
-      ${selectedJobInput}
-    </div>
-
-    <div style="
-      font: 10pt sans-serif;
-      font-weight: bold;
-      margin-top: 24px;
-      margin-bottom: 12px;
-    ">
-      Years of Experience
-    </div>
-
-    <div style="width:260px;">
-      ${selectedYearsInput}
-    </div>
-
-    <div style="
-      font: 9pt sans-serif;
-      margin-top: 8px;
-      color: #555;
-      width:260px;
-      line-height:1.3;
-      white-space: normal;
-    ">
-      Showing candidates with ${selectedYears} years of experience or less.
-    </div>
-
-    <div style="
-      font: 9pt sans-serif;
-      margin-top: 10px;
-      color: #555;
-    ">
-      Showing ${filteredData.length} of ${data.length} candidates.
-    </div>
 
   </div>
 
