@@ -92,10 +92,35 @@ const selectedYears = view(
     }
  )
 );
+
+```
+
+```js
+const selectedDisagreement = Mutable("All");
+const setSelectedDisagreement = d => {
+  selectedDisagreement.value = d;
+};
+```
+
+```js
+function disagreementType(d) {
+  const diff = d.AI_Score - d.Human_Score;
+
+  if (diff > 5) return "AI scored higher";
+  if (diff < -5) return "Human scored higher";
+  return "Similar scores";
+}
 ```
 
 ```js
 const filteredData = data.filter(d =>
+  (selectedJob === "All" || d.Job_Category === selectedJob) &&
+  d.Years_Experience <= selectedYears 
+);
+```
+
+```js
+const baseFilteredData = data.filter(d =>
   (selectedJob === "All" || d.Job_Category === selectedJob) &&
   d.Years_Experience <= selectedYears
 );
@@ -105,15 +130,15 @@ const filteredData = data.filter(d =>
 const disagreementData = [
   {
     type: "AI scored higher",
-    count: filteredData.filter(d => d.AI_Score - d.Human_Score > 5).length
+    count: baseFilteredData.filter(d => d.AI_Score - d.Human_Score > 5).length
   },
   {
     type: "Similar scores",
-    count: filteredData.filter(d => Math.abs(d.AI_Score - d.Human_Score) <= 5).length
+    count: baseFilteredData.filter(d => Math.abs(d.AI_Score - d.Human_Score) <= 5).length
   },
   {
     type: "Human scored higher",
-    count: filteredData.filter(d => d.Human_Score - d.AI_Score > 5).length
+    count: baseFilteredData.filter(d => d.Human_Score - d.AI_Score > 5).length
   }
 ];
 ```
@@ -162,9 +187,16 @@ const disagreementChart = (() => {
     .join("rect")
     .attr("x", d => x(d.type))
     .attr("width", x.bandwidth())
+    .attr("fill", "#444")
+    .attr("opacity", d => selectedDisagreement === "All" || selectedDisagreement === d.type ? 0.85 : 0.3)
+    
+    .attr("cursor", "pointer")
     .attr("y", y(0))
     .attr("height", 0)
-    .attr("opacity", 0.75)
+    .on("click", function(event, d) {
+    const nextValue = selectedDisagreement === d.type ? "All" : d.type;
+    setSelectedDisagreement(nextValue);
+  })
     .transition()
     .duration(700)
     .ease(d3.easeCubicOut)
@@ -299,7 +331,11 @@ const scatterplot = (() => {
       .attr("cx", d => x(d.Human_Score))
       .attr("cy", d => y(d.AI_Score))
       .attr("r", 3)
-      .attr("opacity", 0.6)
+      .attr("opacity", d =>
+        selectedDisagreement === "All" || disagreementType(d) === selectedDisagreement
+          ? 0.75
+          : 0.2
+      )
       .attr("fill", d => color(d.Final_Decision === 1 ? "Shortlisted" : "Rejected"))
       .call(g => attachTooltip(g, tooltip, d => `
         <strong>Candidate ${d.Candidate_ID}</strong><br>
@@ -345,6 +381,7 @@ html`
       <div>Showing candidates with ${selectedYears} years of experience or less.</div>
 
     <div> Showing ${filteredData.length} of ${data.length} candidates.</div>
+    <div>Highlighted group: ${selectedDisagreement}</div>
     </div>
 
     <div style="
@@ -353,7 +390,7 @@ html`
       line-height:1.5;
       margin-top:10px;
     ">
-      This scatterplot compares human and AI hiring scores for each candidate. The dashed line shows equal scores, so points above or below it reveal disagreement. The filters let viewers explore how these patterns change by job category and experience level.
+      This scatterplot compares AI and human scores for each candidate. Points above the dashed line were scored higher by AI, while points below were scored higher by humans.
     </div>
 
     <div style="margin-top:24px;">
@@ -366,7 +403,7 @@ html`
       line-height:1.5;
       margin-top:8px;
     ">
-      This summary chart updates with the filters and shows whether the selected candidates are mostly scored higher by score higher by humans, or scored similarly by both systems. Scores are counted as similar when the AI and human scores differ by 5 points or less.
+      This chart summarizes disagreement types. Scores within 5 points are counted as similar. Click a bar to highlight that group in the scatterplot.
     </div>
   </div>
 
@@ -382,15 +419,13 @@ html`
 ```
 ## Design Rationale
 
-I chose a scatterplot because the main goal is to compare AI and human hiring scores for each candidate. The dashed diagonal line represents perfect agreement between the two scores. Points near the line show candidates where AI and humans scored similarly. Points above the line were scored higher by AI, while points below the line were scored higher by humans.
+I chose a scatterplot because the main goal is to compare AI and human hiring scores for each candidate. The dashed diagonal line shows perfect agreement between the two scores. Points above the line were scored higher by AI, while points below the line were scored higher by humans.
 
-Color shows the final hiring decision. Green represents shortlisted candidates, and red represents rejected candidates. This makes it easier to see how the score patterns relate to actual outcomes.
+Color shows the final hiring decision, with green for shortlisted candidates and red for rejected candidates. I added a job category dropdown and years-of-experience slider so viewers can explore how score agreement changes across different groups. Tooltips provide candidate details without cluttering the chart.
 
-I added a job category dropdown and years-of-experience slider so viewers can explore whether score agreement changes across roles or experience levels. Tooltips provide candidate details without cluttering the chart. I also included a summary bar chart that updates with the filters, showing whether candidates were mostly scored higher by AI, higher by humans, or similarly by both systems.
+I also included a summary bar chart that counts three disagreement types: AI scored higher, human scored higher, and similar scores.  I defined similar scores as cases where the AI and human scores differ by 5 points or less. The bars are clickable, so selecting a bar highlights that disagreement group in the scatterplot while fading the other points.
 
-I considered using a bar chart or summary table, but those would hide individual candidate-level differences. This design works better because it shows both detailed candidate comparisons and broader disagreement patterns.
-
-Overall, this design helps viewers quickly understand where AI and human scores agree, where they differ, and how those differences connect to hiring decisions.
+I considered using only a bar chart or summary table, but those would hide individual candidate-level differences. The final design combines an overview of disagreement patterns with detailed candidate-level exploration, while the linked highlighting interaction keeps the full scatterplot visible for context.
 
 ## Data Source
 
