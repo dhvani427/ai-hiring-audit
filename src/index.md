@@ -8,7 +8,7 @@ const data = FileAttachment("data/ai_hiring_audit_dataset.csv").csv({typed: true
 function legend(container, color) {
   const categories = ["Shortlisted", "Rejected"];
 
-  const paddingTop = 15;
+  const paddingTop = 45;
   const entrySpacing = 20;
   const titleOffset = 15;
   const symbolRadius = 5;
@@ -256,7 +256,7 @@ const disagreementData = [
 const disagreementChart = (() => {
   const width = 520;
   const height = 500;
-  const margin = {top: 35, right: 20, bottom: 70, left: 55};
+  const margin = {top: 60, right: 20, bottom: 60, left: 70};
 
   const svg = d3.create("svg")
     .attr("width", width)
@@ -329,7 +329,7 @@ const disagreementChart = (() => {
   svg.append("text")
     .attr("transform", "rotate(-90)")
     .attr("x", -height / 2)
-    .attr("y", 18)
+    .attr("y", 20)
     .attr("text-anchor", "middle")
     .style("font", "10pt sans-serif")
     .text("Number of candidates");
@@ -346,7 +346,7 @@ const scatterplot = (() => {
   
   const width = 760;
   const height = 500;
-  const margin = {top: 40, right: 30, bottom: 60, left: 70};
+  const margin = {top: 60, right: 30, bottom: 60, left: 70};
   const plotWidth = 610;
 
   // Create SVG
@@ -425,8 +425,8 @@ const scatterplot = (() => {
     .attr("opacity", 0.7);
 
   svg.append("text")
-    .attr("x", x(66))
-    .attr("y", y(94))
+    .attr("x", x(90))
+    .attr("y", y(102))
     .style("font", "9pt sans-serif")
     .style("fill", "black")
     .text("AI Score = Human Score");
