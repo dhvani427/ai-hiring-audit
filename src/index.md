@@ -348,7 +348,7 @@ const disagreementChart = (() => {
 const scatterplot = (() => {
   const color = d3.scaleOrdinal()
   .domain(["Shortlisted", "Rejected"])
-  .range(["green", "red"]);
+  .range(["#0072B2", "#E69F00"]); // Okabe-Ito blue / vermillion — darker, colorblind-safe
   
   const width = 760;
   const height = 500;
