@@ -524,7 +524,7 @@ html`
 
 I chose a scatterplot because the main goal is to compare AI and human hiring scores for each candidate. The dashed diagonal line shows perfect agreement between the two scores. Points above the line were scored higher by AI, while points below the line were scored higher by humans.
 
-Color shows the final hiring decision, with green for shortlisted candidates and red for rejected candidates. I added a job category dropdown and years-of-experience slider so viewers can explore how score agreement changes across different groups. Tooltips provide candidate details without cluttering the chart.
+Color shows the final hiring decision, with blue for shortlisted candidates and orange for rejected candidates. I added a job category dropdown and years-of-experience slider so viewers can explore how score agreement changes across different groups. Tooltips provide candidate details without cluttering the chart.
 
 I also included a summary bar chart that counts three disagreement types: AI scored higher, human scored higher, and similar scores.  I defined similar scores as cases where the AI and human scores differ by 5 points or less. The bars are clickable, so selecting a bar highlights that disagreement group in the scatterplot while fading the other points.
 
