@@ -254,9 +254,9 @@ const disagreementData = [
 
 ```js
 const disagreementChart = (() => {
-  const width = 380;
+  const width = 520;
   const height = 500;
-  const margin = {top: 35, right: 15, bottom: 90, left: 55};
+  const margin = {top: 35, right: 20, bottom: 70, left: 55};
 
   const svg = d3.create("svg")
     .attr("width", width)
@@ -274,9 +274,9 @@ const disagreementChart = (() => {
 
   svg.append("text")
     .attr("x", width / 2)
-    .attr("y", 20)
+    .attr("y", 25)
     .attr("text-anchor", "middle")
-    .style("font", "16px serif")
+    .style("font", "20px serif")
     .style("font-weight", "bold")
     .text("Score Disagreement Summary");
 
@@ -284,11 +284,7 @@ const disagreementChart = (() => {
     .attr("transform", `translate(0, ${height - margin.bottom})`)
     .call(d3.axisBottom(x))
     .selectAll("text")
-    .style("font", "8pt sans-serif")
-    .style("text-anchor", "end")
-    .attr("transform", "rotate(-30)")
-    .attr("dx", "-0.4em")
-    .attr("dy", "0.15em");
+    .style("font", "9pt sans-serif");
 
   svg.append("g")
     .attr("class", "y-axis")
@@ -509,7 +505,7 @@ html`
     ${disagreementChart}
 
     <div style="
-      width:380px;
+      width:520px;
       font: 10pt sans-serif;
       line-height:1.5;
       margin-top:8px;
