@@ -524,7 +524,7 @@ html`
 
 I chose a scatterplot because the main goal is to compare AI and human hiring scores for each candidate. The dashed diagonal line shows perfect agreement between the two scores. Points above the line were scored higher by AI, while points below the line were scored higher by humans.
 
-Color shows the final hiring decision, with blue for shortlisted candidates and orange for rejected candidates. I added a job category dropdown and years-of-experience slider so viewers can explore how score agreement changes across different groups. Tooltips provide candidate details without cluttering the chart.
+Color shows the final hiring decision, with blue for shortlisted candidates and orange for rejected candidates. I added a job category dropdown and years-of-experience range slider so viewers can explore how score agreement changes across different groups. The slider is adapted from a D3 brush example on Observable (see References). Tooltips provide candidate details without cluttering the chart.
 
 I also included a summary bar chart that counts three disagreement types: AI scored higher, human scored higher, and similar scores.  I defined similar scores as cases where the AI and human scores differ by 5 points or less. The bars are clickable, so selecting a bar highlights that disagreement group in the scatterplot while fading the other points.
 
@@ -535,6 +535,10 @@ I considered using only a bar chart or summary table, but those would hide indiv
 AI-Assisted Hiring Fairness and Bias Audit Dataset by Zulqarnain Haider on Kaggle. The dataset contains 1,500 simulated candidate records and is intended for analyzing AI/human hiring alignment, disagreement, and bias patterns.
 
 Dataset link: [https://www.kaggle.com/datasets/zulqarnain11/zzzzzzzzzzzzzzzz](https://www.kaggle.com/datasets/zulqarnain11/zzzzzzzzzzzzzzzz)
+
+## References
+
+https://observablehq.com/@sarah37/snapping-range-slider-with-d3-brush
 
 ## Project Repository
 
