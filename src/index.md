@@ -468,52 +468,49 @@ const scatterplot = (() => {
 
 ```js
 html`
-<div style="
-  display:flex;
-  gap:24px;
-  align-items:flex-start;
-">
+<div>
+  <div style="
+    display:flex;
+    gap:24px;
+    align-items:flex-start;
+  ">
+    <div>${scatterplot}</div>
+    <div>${disagreementChart}</div>
+  </div>
 
-  <div>
-    ${scatterplot}
+  <div style="
+    font: 10pt sans-serif;
+    margin-top: 8px;
+    color: #555;
+    line-height: 1.3;
+    text-align: center;
+  ">
+    <div>Showing candidates with with ${experienceRange[0]} to ${experienceRange[1]} years of experience or less.</div>
+    <div>Showing ${filteredData.length} of ${data.length} candidates.</div>
+    <div>Highlighted group: ${selectedDisagreement}</div>
+  </div>
 
+  <div style="
+    display:flex;
+    gap:24px;
+    margin-top:10px;
+  ">
     <div style="
-      font: 10pt sans-serif;
-      margin-top: 8px;
-      color: #555;
-      width:610px;
-      line-height:1.3;
-      white-space: normal;
-      text-align:center;
-    ">
-      <div>Showing candidates with with ${experienceRange[0]} to ${experienceRange[1]} years of experience or less.</div>
-      <div>Showing ${filteredData.length} of ${data.length} candidates.</div>
-      <div>Highlighted group: ${selectedDisagreement}</div>
-    </div>
-
-    <div style="
-      width:610px;
+      width:760px;
       font: 10pt sans-serif;
       line-height:1.5;
-      margin-top:10px;
     ">
       This scatterplot compares AI and human scores for each candidate. Points above the dashed line were scored higher by AI, while points below were scored higher by humans.
     </div>
-  </div>
-
-  <div>
-    ${disagreementChart}
 
     <div style="
       width:520px;
       font: 10pt sans-serif;
       line-height:1.5;
-      margin-top:8px;
     ">
       This chart summarizes disagreement types. Scores within 5 points are counted as similar. Click a bar to highlight that group in the scatterplot.
     </div>
   </div>
-
 </div>
 `
 ```
