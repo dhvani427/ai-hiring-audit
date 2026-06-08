@@ -257,8 +257,10 @@ const disagreementChart = (() => {
   const width = 520;
   const height = 500;
   const margin = {top: 60, right: 20, bottom: 60, left: 70};
+  const prev = globalThis.__previousBarCounts ?? {};
 
-  const svg = d3.create("svg")
+  const container = htl.html`<div></div>`;
+  const svg = d3.select(container).append("svg")
     .attr("width", width)
     .attr("height", height);
 
@@ -268,9 +270,10 @@ const disagreementChart = (() => {
     .padding(0.25);
 
   const y = d3.scaleLinear()
-    .domain([0, d3.max(disagreementData, d => d.count)])
-    .nice()
+    .domain([0, 1000])
     .range([height - margin.bottom, margin.top]);
+
+  const t = d3.transition().duration(900).ease(d3.easeCubicInOut);
 
   svg.append("text")
     .attr("x", width / 2)
@@ -291,40 +294,30 @@ const disagreementChart = (() => {
     .attr("transform", `translate(${margin.left}, 0)`)
     .call(d3.axisLeft(y));
 
-  svg.selectAll("rect")
+  const bars = svg.selectAll("rect")
     .data(disagreementData, d => d.type)
     .join("rect")
     .attr("x", d => x(d.type))
     .attr("width", x.bandwidth())
     .attr("fill", "#444")
     .attr("opacity", d => selectedDisagreement === "All" || selectedDisagreement === d.type ? 0.85 : 0.3)
-    
     .attr("cursor", "pointer")
-    .attr("y", y(0))
-    .attr("height", 0)
+    .attr("y", d => y(prev[d.type] ?? 0))
+    .attr("height", d => Math.max(0, y(0) - y(prev[d.type] ?? 0)))
     .on("click", function(event, d) {
-    const nextValue = selectedDisagreement === d.type ? "All" : d.type;
-    setSelectedDisagreement(nextValue);
-  })
-    .transition()
-    .duration(700)
-    .ease(d3.easeCubicOut)
-    .attr("y", d => y(d.count))
-    .attr("height", d => y(0) - y(d.count));
+      const nextValue = selectedDisagreement === d.type ? "All" : d.type;
+      setSelectedDisagreement(nextValue);
+    });
 
-  svg.selectAll("text.count")
+  const labels = svg.selectAll("text.count")
     .data(disagreementData, d => d.type)
     .join("text")
     .attr("class", "count")
     .attr("x", d => x(d.type) + x.bandwidth() / 2)
-    .attr("y", y(0) - 6)
     .attr("text-anchor", "middle")
     .style("font", "9pt sans-serif")
-    .text(d => d.count)
-    .transition()
-    .duration(700)
-    .ease(d3.easeCubicOut)
-    .attr("y", d => y(d.count) - 6);
+    .attr("y", d => y(prev[d.type] ?? 0) - 6)
+    .text(d => d.count);
 
   svg.append("text")
     .attr("transform", "rotate(-90)")
@@ -334,7 +327,20 @@ const disagreementChart = (() => {
     .style("font", "10pt sans-serif")
     .text("Number of candidates");
 
-  return svg.node();
+  requestAnimationFrame(() => {
+    bars.transition(t)
+      .attr("y", d => y(d.count))
+      .attr("height", d => Math.max(0, y(0) - y(d.count)));
+
+    labels.transition(t)
+      .attr("y", d => y(d.count) - 6);
+  });
+
+  globalThis.__previousBarCounts = Object.fromEntries(
+    disagreementData.map(d => [d.type, d.count])
+  );
+
+  return container;
 })();
 ```
 
