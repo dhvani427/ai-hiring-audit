@@ -254,9 +254,9 @@ const disagreementData = [
 
 ```js
 const disagreementChart = (() => {
-  const width = 610;
-  const height = 220;
-  const margin = {top: 35, right: 20, bottom: 60, left: 60};
+  const width = 380;
+  const height = 500;
+  const margin = {top: 35, right: 15, bottom: 90, left: 55};
 
   const svg = d3.create("svg")
     .attr("width", width)
@@ -284,7 +284,11 @@ const disagreementChart = (() => {
     .attr("transform", `translate(0, ${height - margin.bottom})`)
     .call(d3.axisBottom(x))
     .selectAll("text")
-    .style("font", "9pt sans-serif");
+    .style("font", "8pt sans-serif")
+    .style("text-anchor", "end")
+    .attr("transform", "rotate(-30)")
+    .attr("dx", "-0.4em")
+    .attr("dy", "0.15em");
 
   svg.append("g")
     .attr("class", "y-axis")
@@ -469,10 +473,9 @@ const scatterplot = (() => {
 ```js
 html`
 <div style="
-  display:grid;
-  grid-template-columns: 760px 260px;
-  column-gap:24px;
-  align-items:start;
+  display:flex;
+  gap:24px;
+  align-items:flex-start;
 ">
 
   <div>
@@ -488,9 +491,8 @@ html`
       text-align:center;
     ">
       <div>Showing candidates with with ${experienceRange[0]} to ${experienceRange[1]} years of experience or less.</div>
-
-    <div> Showing ${filteredData.length} of ${data.length} candidates.</div>
-    <div>Highlighted group: ${selectedDisagreement}</div>
+      <div>Showing ${filteredData.length} of ${data.length} candidates.</div>
+      <div>Highlighted group: ${selectedDisagreement}</div>
     </div>
 
     <div style="
@@ -501,26 +503,19 @@ html`
     ">
       This scatterplot compares AI and human scores for each candidate. Points above the dashed line were scored higher by AI, while points below were scored higher by humans.
     </div>
+  </div>
 
-    <div style="margin-top:24px;">
-      ${disagreementChart}
-    </div>
+  <div>
+    ${disagreementChart}
 
     <div style="
-      width:610px;
+      width:380px;
       font: 10pt sans-serif;
       line-height:1.5;
       margin-top:8px;
     ">
       This chart summarizes disagreement types. Scores within 5 points are counted as similar. Click a bar to highlight that group in the scatterplot.
     </div>
-  </div>
-
-  <div style="
-    margin-top:42px;
-    width:260px;
-  ">
-
   </div>
 
 </div>
