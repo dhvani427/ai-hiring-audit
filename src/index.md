@@ -75,26 +75,133 @@ function attachTooltip(target, tooltip, fn) {
 const selectedJob = view( Inputs.select(
     ["All", ...new Set(data.map(d => d.Job_Category))],
     {label: "Job Category"}
-  ));
+));
 ```
 
 ```js
-const selectedYears = view(
-  Inputs.range(
-    [
-      d3.min(data, d => d.Years_Experience),
-      d3.max(data, d => d.Years_Experience)
-    ],
-    {
-      step: 1,
-      value: d3.max(data, d => d.Years_Experience),
-      label: "Max Experience"
-    }
- )
-);
+function experienceRangeSlider(min, max, startingMin = min, startingMax = max) {
+  const width = 220;
+  const height = 58;
+  const margin = {top: 18, right: 8, bottom: 26, left: 8};
+  const trackY = margin.top + 6;
 
+  const container = htl.html`
+    <style>
+      .experience-range-slider .selection {
+        fill: #4a7fc1;
+        fill-opacity: 0.2;
+        stroke: #4a7fc1;
+        stroke-width: 1.5;
+        cursor: grab;
+      }
+      .experience-range-slider .handle {
+        fill: #fff;
+        stroke: #4a7fc1;
+        stroke-width: 2;
+        cursor: ew-resize;
+        rx: 2;
+      }
+      .experience-range-slider .overlay {
+        cursor: crosshair;
+      }
+    </style>
+    <div class="experience-range-slider"></div>
+  `;
+
+  const svg = d3.create("svg")
+    .attr("width", width)
+    .attr("height", height)
+    .attr("viewBox", `0 0 ${width} ${height}`);
+
+  const x = d3.scaleLinear()
+    .domain([min, max])
+    .range([margin.left, width - margin.right]);
+
+  const rangeLabel = svg.append("text")
+    .attr("x", width / 2)
+    .attr("y", 12)
+    .attr("text-anchor", "middle")
+    .style("font", "10pt sans-serif")
+    .style("fill", "#333");
+
+  svg.append("line")
+    .attr("x1", margin.left)
+    .attr("x2", width - margin.right)
+    .attr("y1", trackY)
+    .attr("y2", trackY)
+    .attr("stroke", "#d0d0d0")
+    .attr("stroke-width", 6)
+    .attr("stroke-linecap", "round");
+
+  const rangeFill = svg.append("rect")
+    .attr("y", trackY - 3)
+    .attr("height", 6)
+    .attr("fill", "#4a7fc1")
+    .attr("opacity", 0.55)
+    .attr("rx", 3);
+
+  const tickCount = Math.min(max - min + 1, 10);
+
+  svg.append("g")
+    .attr("transform", `translate(0, ${height - margin.bottom + 4})`)
+    .call(
+      d3.axisBottom(x)
+        .ticks(tickCount)
+        .tickSize(4)
+        .tickFormat(d => `${d}`)
+    )
+    .call(g => g.select(".domain").remove())
+    .call(g => g.selectAll("text").style("font", "9pt sans-serif").style("fill", "#666"));
+
+  function updateRange(range) {
+    const [lo, hi] = range;
+    rangeLabel.text(`${lo} – ${hi} years`);
+    rangeFill
+      .attr("x", x(lo))
+      .attr("width", Math.max(0, x(hi) - x(lo)));
+    container.value = range;
+    container.dispatchEvent(new CustomEvent("input"));
+  }
+
+  const brush = d3.brushX()
+    .extent([[margin.left, margin.top], [width - margin.right, trackY + 14]])
+    .on("brush end", ({selection}) => {
+      if (!selection) return;
+      const values = selection.map(x.invert).map(v => Math.round(Math.max(min, Math.min(max, v))));
+      updateRange([Math.min(values[0], values[1]), Math.max(values[0], values[1])]);
+    });
+
+  svg.append("g")
+    .call(brush)
+    .call(brush.move, [startingMin, startingMax].map(x));
+
+  container.querySelector(".experience-range-slider").append(svg.node());
+  updateRange([startingMin, startingMax].map(Math.round));
+
+  return container;
+}
 ```
 
+```js
+const experienceRangeInput = (() => {
+  const slider = experienceRangeSlider(
+    d3.min(data, d => d.Years_Experience),
+    d3.max(data, d => d.Years_Experience)
+  );
+  const form = htl.html`<form class="inputs-3a86ea">
+    <label>Years of Experience</label>
+    <div class="inputs-3a86ea-input">${slider}</div>
+  </form>`;
+  slider.addEventListener("input", () => form.dispatchEvent(new CustomEvent("input")));
+  Object.defineProperty(form, "value", {
+    get: () => slider.value,
+    set: v => { slider.value = v; }
+  });
+  return form;
+})();
+
+const experienceRange = view(experienceRangeInput);
+```
 ```js
 const selectedDisagreement = Mutable("All");
 const setSelectedDisagreement = d => {
@@ -115,14 +222,16 @@ function disagreementType(d) {
 ```js
 const filteredData = data.filter(d =>
   (selectedJob === "All" || d.Job_Category === selectedJob) &&
-  d.Years_Experience <= selectedYears 
+  d.Years_Experience >= experienceRange[0] &&
+  d.Years_Experience <= experienceRange[1]
 );
 ```
 
 ```js
 const baseFilteredData = data.filter(d =>
   (selectedJob === "All" || d.Job_Category === selectedJob) &&
-  d.Years_Experience <= selectedYears
+  d.Years_Experience >= experienceRange[0] &&
+  d.Years_Experience <= experienceRange[1]
 );
 ```
 
@@ -378,7 +487,7 @@ html`
       white-space: normal;
       text-align:center;
     ">
-      <div>Showing candidates with ${selectedYears} years of experience or less.</div>
+      <div>Showing candidates with with ${experienceRange[0]} to ${experienceRange[1]} years of experience or less.</div>
 
     <div> Showing ${filteredData.length} of ${data.length} candidates.</div>
     <div>Highlighted group: ${selectedDisagreement}</div>
