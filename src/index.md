@@ -370,6 +370,10 @@ const scatterplot = (() => {
 
   const container = htl.html`
     <style>
+      .scatterplot-container {
+        position: relative;
+        display: inline-block;
+      }
       #tooltip {
         font: 10pt sans-serif;
         background-color: white;
@@ -377,13 +381,16 @@ const scatterplot = (() => {
         padding: 5px;
         box-shadow: 3px 3px 3px darkgrey;
         max-width: 40ch;
-        z-index: 1;
-        visibility: hidden; 
-        position: absolute;
+        z-index: 1000;
+        visibility: hidden;
+        position: fixed;
+        pointer-events: none;
       }
     </style>
-    <div id="tooltip"></div>
-    ${svg.node()}
+    <div class="scatterplot-container">
+      <div id="tooltip"></div>
+      ${svg.node()}
+    </div>
   `;
 
   const x = d3.scaleLinear()
@@ -438,29 +445,77 @@ const scatterplot = (() => {
     .text("AI Score = Human Score");
       
   const tooltip = d3.select(container).select("#tooltip");
+  const plotLeft = margin.left;
+  const plotTop = margin.top;
+  const plotRight = plotWidth - margin.right;
+  const plotBottom = height - margin.bottom;
 
-  svg.selectAll("circle.candidate")
-    .data(filteredData)
-    .join("circle")
+  const candidates = svg.selectAll("g.candidate")
+    .data(filteredData, d => d.Candidate_ID)
+    .join("g")
       .attr("class", "candidate")
-      .attr("cx", d => x(d.Human_Score))
-      .attr("cy", d => y(d.AI_Score))
+      .attr("transform", d => `translate(${x(d.Human_Score)}, ${y(d.AI_Score)})`);
+
+  candidates.selectAll("circle.visible")
+    .data(d => [d])
+    .join("circle")
+      .attr("class", "visible")
       .attr("r", 4)
+      .attr("pointer-events", "none")
       .attr("opacity", d =>
         selectedDisagreement === "All" || disagreementType(d) === selectedDisagreement
           ? 0.65
           : 0.15
       )
-      .attr("fill", d => color(d.Final_Decision === 1 ? "Shortlisted" : "Rejected"))
-      .call(g => attachTooltip(g, tooltip, d => `
-        <strong>Candidate ${d.Candidate_ID}</strong><br>
-        Job: ${d.Job_Category}<br>
-        Education: ${d.Education_Level}<br>
-        Experience: ${d.Years_Experience} years<br>
-        Human Score: ${d.Human_Score}<br>
-        AI Score: ${d.AI_Score}<br>
-        Final Decision: ${d.Final_Decision === 1 ? "Shortlisted" : "Rejected"}
-      `));
+      .attr("fill", d => color(d.Final_Decision === 1 ? "Shortlisted" : "Rejected"));
+
+  const delaunay = d3.Delaunay.from(
+    filteredData,
+    d => x(d.Human_Score),
+    d => y(d.AI_Score)
+  );
+  const voronoi = delaunay.voronoi([plotLeft, plotTop, plotRight, plotBottom]);
+
+  function candidateTooltip(d) {
+    return `
+      <strong>Candidate ${d.Candidate_ID}</strong><br>
+      Job: ${d.Job_Category}<br>
+      Education: ${d.Education_Level}<br>
+      Experience: ${d.Years_Experience} years<br>
+      Human Score: ${d.Human_Score}<br>
+      AI Score: ${d.AI_Score}<br>
+      Final Decision: ${d.Final_Decision === 1 ? "Shortlisted" : "Rejected"}
+    `;
+  }
+
+  svg.append("g")
+    .attr("class", "voronoi")
+    .selectAll("path")
+    .data(filteredData, d => d.Candidate_ID)
+    .join("path")
+      .attr("d", (_, i) => voronoi.renderCell(i))
+      .attr("fill", "transparent")
+      .attr("stroke", "none")
+      .attr("pointer-events", "all")
+      .attr("cursor", "pointer")
+      .on("mousemove", function(event, d) {
+        candidates.select("circle.visible")
+          .attr("stroke", c => c.Candidate_ID === d.Candidate_ID ? "black" : null)
+          .attr("stroke-width", c => c.Candidate_ID === d.Candidate_ID ? 1.5 : null);
+
+        tooltip
+          .style("visibility", "visible")
+          .style("top", `${event.clientY + 12}px`)
+          .style("left", `${event.clientX + 12}px`)
+          .html(candidateTooltip(d));
+      })
+      .on("mouseleave", () => {
+        candidates.select("circle.visible")
+          .attr("stroke", null);
+
+        tooltip
+          .style("visibility", "hidden");
+      });
   
   const legendGroup = svg.append("g")
   .attr("transform", `translate(${plotWidth + 20}, 40)`);
