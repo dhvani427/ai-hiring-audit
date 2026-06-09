@@ -477,6 +477,7 @@ const scatterplot = (() => {
   const voronoi = delaunay.voronoi([plotLeft, plotTop, plotRight, plotBottom]);
 
   function candidateTooltip(d) {
+
     return `
       <strong>Candidate ${d.Candidate_ID}</strong><br>
       Job: ${d.Job_Category}<br>
@@ -546,7 +547,7 @@ html`
     line-height: 1.3;
     text-align: center;
   ">
-    <div>Showing candidates with ${experienceRange[0]} to ${experienceRange[1]} years of experience or less.</div>
+    <div>Showing candidates with ${experienceRange[0]} to ${experienceRange[1]} years of experience.</div>
     <div>Showing ${filteredData.length} of ${data.length} candidates.</div>
     <div>Highlighted group: ${selectedDisagreement}</div>
   </div>
@@ -561,7 +562,7 @@ html`
       font: 10pt sans-serif;
       line-height:1.5;
     ">
-      This scatterplot compares AI and human scores for each candidate. Points above the dashed line were scored higher by AI, while points below were scored higher by humans.
+      This scatterplot compares AI and human scores for each candidate. Points above the dashed line were scored higher by AI, while points below were scored higher by humans. Try filtering by job category or narrowing the experience range to see whether disagreement clusters in certain roles or career stages.
     </div>
 
     <div style="
@@ -569,7 +570,7 @@ html`
       font: 10pt sans-serif;
       line-height:1.5;
     ">
-      This chart summarizes disagreement types. Scores within 5 points are counted as similar. Click a bar to highlight that group in the scatterplot.
+      This chart summarizes disagreement types. Scores within 5 points are counted as similar. Click a bar to highlight that group in the scatterplot and compare how many candidates fall into each category.
     </div>
   </div>
 </div>
@@ -579,11 +580,16 @@ html`
 
 I chose a scatterplot because the main goal is to compare AI and human hiring scores for each candidate. The dashed diagonal line shows perfect agreement between the two scores. Points above the line were scored higher by AI, while points below the line were scored higher by humans.
 
-Color shows the final hiring decision, with blue for shortlisted candidates and orange for rejected candidates. I added a job category dropdown and years-of-experience range slider so viewers can explore how score agreement changes across different groups. The slider is adapted from a D3 brush example on Observable (see References). Tooltips provide candidate details without cluttering the chart.
+Color shows the final hiring decision, with blue for shortlisted candidates and orange for rejected candidates, to make the colors of the chart accessible. I added a job category dropdown and a two-directional years-of-experience range slider so viewers can explore how score agreement changes across different groups. The scatterplot and summary bar chart are placed side by side so both views update together when filters change. Tooltips show candidate details. I also implemented a voronoi mesh overlay as it makes tooltips easier to trigger in dense regions by snapping hover to the nearest candidate.
 
-I also included a summary bar chart that counts three disagreement types: AI scored higher, human scored higher, and similar scores.  I defined similar scores as cases where the AI and human scores differ by 5 points or less. The bars are clickable, so selecting a bar highlights that disagreement group in the scatterplot while fading the other points.
+I also included a summary bar chart that counts three disagreement types: AI scored higher, human scored higher, and similar scores. I defined similar scores as cases where the AI and human scores differ by 5 points or less. The bars are clickable, so selecting a bar highlights that disagreement group in the scatterplot while fading the other points. When filters change, bar heights animate from their previous values rather than resetting from zero.
 
-I considered using only a bar chart or summary table, but those would hide individual candidate-level differences. The final design combines an overview of disagreement patterns with detailed candidate-level exploration, while the linked highlighting interaction keeps the full scatterplot visible for context.
+
+
+I considered using only a bar chart or summary table, but those would hide individual 
+candidate-level differences. The final design combines an overview of disagreement 
+patterns with detailed candidate-level exploration, while the linked highlighting 
+interaction keeps the full scatterplot visible for context.
 
 ## Data Source
 
@@ -593,7 +599,8 @@ Dataset link: [https://www.kaggle.com/datasets/zulqarnain11/zzzzzzzzzzzzzzzz](ht
 
 ## References
 
-https://observablehq.com/@sarah37/snapping-range-slider-with-d3-brush
+- Experience range slider adapted from Sarah Schottler, [Range slider with d3 brush](https://observablehq.com/@sarah37/snapping-range-slider-with-d3-brush) (Observable)
+- Voronoi tooltip overlay uses [D3 Delaunay](https://d3js.org/d3-delaunay)
 
 ## Project Repository
 
