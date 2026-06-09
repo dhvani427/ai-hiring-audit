@@ -254,9 +254,9 @@ const disagreementData = [
 
 ```js
 const disagreementChart = (() => {
-  const width = 520;
+  const width = 420;
   const height = 500;
-  const margin = {top: 60, right: 20, bottom: 60, left: 70};
+  const margin = {top: 60, right: 15, bottom: 60, left: 55};
   const prev = globalThis.__previousBarCounts ?? {};
 
   const container = htl.html`<div></div>`;
@@ -270,7 +270,7 @@ const disagreementChart = (() => {
     .padding(0.25);
 
   const y = d3.scaleLinear()
-    .domain([0, 1000])
+    .domain([0, 900])
     .range([height - margin.bottom, margin.top]);
 
   const t = d3.transition().duration(900).ease(d3.easeCubicInOut);
@@ -349,11 +349,11 @@ const scatterplot = (() => {
   const color = d3.scaleOrdinal()
   .domain(["Shortlisted", "Rejected"])
   .range(["#0072B2", "#E69F00"]); // Okabe-Ito blue / vermillion — darker, colorblind-safe
-  
-  const width = 760;
+
+  const width = 900;
   const height = 500;
   const margin = {top: 60, right: 30, bottom: 60, left: 70};
-  const plotWidth = 610;
+  const plotWidth = 750;
 
   // Create SVG
   const svg = d3.create("svg")
@@ -445,11 +445,11 @@ const scatterplot = (() => {
       .attr("class", "candidate")
       .attr("cx", d => x(d.Human_Score))
       .attr("cy", d => y(d.AI_Score))
-      .attr("r", 3)
+      .attr("r", 4)
       .attr("opacity", d =>
         selectedDisagreement === "All" || disagreementType(d) === selectedDisagreement
-          ? 0.75
-          : 0.2
+          ? 0.65
+          : 0.15
       )
       .attr("fill", d => color(d.Final_Decision === 1 ? "Shortlisted" : "Rejected"))
       .call(g => attachTooltip(g, tooltip, d => `
@@ -491,7 +491,7 @@ html`
     line-height: 1.3;
     text-align: center;
   ">
-    <div>Showing candidates with with ${experienceRange[0]} to ${experienceRange[1]} years of experience or less.</div>
+    <div>Showing candidates with ${experienceRange[0]} to ${experienceRange[1]} years of experience or less.</div>
     <div>Showing ${filteredData.length} of ${data.length} candidates.</div>
     <div>Highlighted group: ${selectedDisagreement}</div>
   </div>
@@ -502,7 +502,7 @@ html`
     margin-top:10px;
   ">
     <div style="
-      width:760px;
+      width:900px;
       font: 10pt sans-serif;
       line-height:1.5;
     ">
@@ -510,7 +510,7 @@ html`
     </div>
 
     <div style="
-      width:520px;
+      width:420px;
       font: 10pt sans-serif;
       line-height:1.5;
     ">
